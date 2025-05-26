@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    environment {
+        OPENAI_API_KEY = credentials('OPENAI_API_KEY')
+        WEATHER_API_KEY = credentials('WEATHER_API_KEY')
+        CITY_NAME = credentials('CITY_NAME')
+    }
+
+    stages {
+        stage('Cloning Repo') {
+            steps {
+                checkout([$class: 'GitSCM',          
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/kwapong91/Ai-weather-reporter.git'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Install dependencies') {
+            steps {
+                sh '/Users/ivan/.pyenv/shims/pip install -r requirements.txt'
+            }
+        }
+        stage('Docker Build') {
+                    steps {
+                        sh '/usr/local/bin/docker build -t weather-reporter .'
+                    }
+                }
+
+        stage('Test Container') {
+            steps {
+                sh '''
+                    /usr/local/bin/docker run --rm \
+                    -e OPENAI_API_KEY=$OPENAI_API_KEY \
+                    -e WEATHER_API_KEY=$WEATHER_API_KEY \
+                    -e CITY_NAME=$CITY_NAME \
+                    weather-reporter
+                '''
+            }
+        }
+
+        stage('Docker Cleanup') {
+            steps {
+                sh '/usr/local/bin/docker rmi -f weather-reporter || true'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution complete!'
+        }
+    }
+}
