@@ -7,8 +7,7 @@ load_dotenv()
 
 BASE_URL='https://api.openweathermap.org/data/2.5/weather'
 API_KEY = os.getenv("WEATHER_API_KEY")
-city_name = input("Enter city name: ")
-
+city_name = os.getenv("CITY_NAME")
 
 def get_weather_data(city_name):
     url = f"{BASE_URL}?q={city_name}&appid={API_KEY}&units=imperial"
