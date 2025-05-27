@@ -16,4 +16,4 @@ USER admin
 EXPOSE 5003
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["python", "app.py"]
